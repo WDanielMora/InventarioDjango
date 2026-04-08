@@ -1,0 +1,181 @@
+{% extends 'gestion_inventario/base.html' %}
+
+{% block title %}Dashboard - Sistema de Inventario{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --color-primary: #1E3C72;
+    --color-secondary: #2A5298;
+    --color-light: #ecf0f1;
+    --color-dark: #2c3e50;
+    --color-warning: #f1c40f;
+    --color-danger: #e74c3c;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .text-gradient {
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+  }
+  .glass-card:hover { transform: translateY(-3px); }
+
+  .kpi-card h5 { color: var(--color-dark); }
+  .kpi-card p { font-weight: 700; }
+
+  .scroll-box { max-height: 120px; overflow-y: auto; }
+
+  .glass-form {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(6px);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  .btn-gradient:hover {
+    transform: scale(1.03);
+    background: linear-gradient(45deg, var(--color-secondary), var(--color-primary));
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
+  <h1 class="h2 text-gradient"> Dashboard</h1>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="row mb-4">
+  <div class="col-md-2">
+    <a href="{% url 'gestion_inventario:lista_clientes' %}" class="btn btn-gradient w-100">
+      <i class="bi bi-people"></i> Clientes
+    </a>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'gestion_inventario:lista_facturas' %}" class="btn btn-gradient w-100">
+      <i class="bi bi-receipt"></i> Facturas
+    </a>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'gestion_inventario:lista_proveedores' %}" class="btn btn-gradient w-100">
+      <i class="bi bi-truck"></i> Proveedores
+    </a>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'gestion_inventario:lista_productos' %}" class="btn btn-gradient w-100">
+      <i class="bi bi-box-seam"></i> Productos
+    </a>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'gestion_inventario:lista_movimientos' %}" class="btn btn-gradient w-100">
+      <i class="bi bi-arrow-left-right"></i> Movimientos
+    </a>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="kpi-card glass-card text-center">
+      <h5 class="fw-bold"> Total Productos</h5>
+      <p class="fs-1 text-primary animate-count">{{ total_productos }}</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="kpi-card glass-card text-center position-relative">
+      <h5 class="fw-bold"> Bajo Stock</h5>
+      <p class="fs-1 text-warning animate-count">{{ productos_bajo_stock }}</p>
+      {% if productos_bajo_stock > 0 %}
+        <span class="badge bg-danger position-absolute top-0 end-0">¡Revisar!</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="kpi-card glass-card text-center">
+      <h5 class="fw-bold"> Últimos Movimientos</h5>
+      <div class="scroll-box fs-6">
+        {% for mov in movimientos_recientes %}
+          <div class="text-muted">{{ mov.producto.nombre }} - {{ mov.tipo }} ({{ mov.cantidad }})</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="row mb-4 glass-form">
+  <!-- ... tus filtros existentes ... -->
+</form>
+
+<!-- Gráfico -->
+<div class="card mb-4 glass-card">
+  <div class="card-body">
+    <canvas id="statsChart"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('statsChart').getContext('2d');
+  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
+  const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-secondary');
+
+  const statsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [{% for s in stats %}"{{ s.periodo|date:'d/m/Y' }}",{% endfor %}],
+      datasets: [{
+        label: 'Cantidad de Movimientos',
+        data: [{% for s in stats %}{{ s.total }},{% endfor %}],
+        backgroundColor: primaryColor,
+        borderColor: secondaryColor,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Movimientos: ${context.raw}`;
+            }
+          }
+        },
+        title: {
+          display: true,
+          text: ' Estadísticas de Inventario',
+          font: { size: 18 }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
