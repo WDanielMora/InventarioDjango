@@ -166,6 +166,12 @@
           </a>
         </li>
         <li class="nav-item">
+          <a href="{% url 'gestion_inventario:lista_clientes' %}" 
+             class="nav-link {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
+            <i class="bi bi-people"></i> Clientes
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="{% url 'gestion_inventario:lista_productos' %}" 
              class="nav-link {% if request.resolver_match.url_name == 'lista_productos' %}active{% endif %}">
             <i class="bi bi-box"></i> Productos

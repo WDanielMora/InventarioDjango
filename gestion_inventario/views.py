@@ -96,27 +96,24 @@ def dashboard(request):
     return render(request, 'gestion_inventario/dashboard.html', context)
 
 
-# ---------------------------
-# Lista de productos
-# ---------------------------
-@login_required
 def lista_productos(request):
     productos = Producto.objects.all()
-    categorias = Categoria.objects.all()
+    proveedores = Proveedor.objects.all()
 
-    categoria_id = request.GET.get('categoria')
-    if categoria_id:
-        productos = productos.filter(categoria_id=categoria_id)
+    # Filtro por proveedor
+    proveedor_id = request.GET.get('proveedor')
+    if proveedor_id:
+        productos = productos.filter(proveedor_id=proveedor_id)
 
+    # Filtro por búsqueda
     search = request.GET.get('search')
     if search:
         productos = productos.filter(nombre__icontains=search)
 
-    context = {
+    return render(request, 'gestion_inventario/lista_productos.html', {
         'productos': productos,
-        'categorias': categorias,
-    }
-    return render(request, 'gestion_inventario/lista_productos.html', context)
+        'proveedores': proveedores
+    })
 
 
 # ---------------------------
@@ -125,7 +122,6 @@ def lista_productos(request):
 @login_required
 @user_passes_test(es_administrador)
 def registrar_producto(request):
-    categorias = Categoria.objects.all()
     proveedores = Proveedor.objects.all()
 
     if request.method == 'POST':
@@ -133,7 +129,6 @@ def registrar_producto(request):
             Producto.objects.create(
                 codigo=request.POST['codigo'],
                 nombre=request.POST['nombre'],
-                categoria_id=request.POST['categoria'],
                 proveedor_id=request.POST['proveedor'],
                 precio=request.POST['precio'],
                 stock_actual=request.POST['stock_actual'],
@@ -146,7 +141,6 @@ def registrar_producto(request):
             messages.error(request, f'Error al registrar producto: {e}')
 
     return render(request, 'gestion_inventario/registrar_producto.html', {
-        'categorias': categorias,
         'proveedores': proveedores
     })
 
@@ -281,7 +275,9 @@ def registrar_cliente(request):
         try:
             Cliente.objects.create(
                 nombre=request.POST['nombre'],
-                email=request.POST.get('email')
+                email=request.POST.get('email'),
+                telefono=request.POST.get('telefono'),
+                direccion=request.POST.get('direccion')
             )
             messages.success(request, 'Cliente registrado correctamente.')
             return redirect('gestion_inventario:lista_clientes')

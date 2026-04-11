@@ -1,12 +1,7 @@
 from django.contrib import admin
-from .models import Categoria, Proveedor, Producto, MovimientoInventario
+from .models import Proveedor, Producto, MovimientoInventario
 from .models import Cliente, Factura, ItemFactura
 from django.contrib.auth.models import User
-
-@admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'descripcion']
-    search_fields = ['nombre']
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
@@ -15,8 +10,7 @@ class ProveedorAdmin(admin.ModelAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ['codigo', 'nombre', 'categoria', 'proveedor', 'precio', 'stock_actual', 'stock_minimo', 'alerta_stock']
-    list_filter = ['categoria', 'activo']
+    list_display = ['codigo', 'nombre', 'proveedor', 'precio', 'stock_actual', 'stock_minimo', 'alerta_stock']
     search_fields = ['codigo', 'nombre']
     list_editable = ['stock_actual', 'stock_minimo']
 

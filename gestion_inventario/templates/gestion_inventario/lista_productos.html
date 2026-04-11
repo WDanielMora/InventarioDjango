@@ -89,11 +89,11 @@
 <!-- Filtros -->
 <form method="get" class="row mb-4">
   <div class="col-md-4">
-    <select name="categoria" class="form-select">
-      <option value="">Todas las categorías</option>
-      {% for cat in categorias %}
-        <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"s" %}selected{% endif %}>
-          {{ cat.nombre }}
+    <select name="proveedor" class="form-select">
+      <option value="">Proveedores</option>
+      {% for prov in proveedores %}
+        <option value="{{ prov.id }}" {% if request.GET.proveedor == prov.id|stringformat:"s" %}selected{% endif %}>
+          {{ prov.nombre }}
         </option>
       {% endfor %}
     </select>
@@ -107,7 +107,6 @@
     </button>
   </div>
 </form>
-
 <!-- Tabla de productos -->
 <div class="card">
   <div class="card-body">
@@ -118,7 +117,6 @@
             <tr>
               <th>Código</th>
               <th>Nombre</th>
-              <th>Categoría</th>
               <th>Proveedor</th>
               <th>Precio</th>
               <th>Stock</th>
@@ -130,7 +128,6 @@
             <tr class="{% if producto.alerta_stock %}table-danger{% endif %}">
               <td>{{ producto.codigo }}</td>
               <td>{{ producto.nombre }}</td>
-              <td>{{ producto.categoria.nombre }}</td>
               <td>{{ producto.proveedor.nombre }}</td>
               <td>${{ producto.precio }}</td>
               <td>{{ producto.stock_actual }}</td>

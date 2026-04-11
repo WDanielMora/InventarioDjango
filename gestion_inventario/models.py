@@ -21,10 +21,11 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    direccion = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         return self.nombre
@@ -33,7 +34,6 @@ class Cliente(models.Model):
 class Producto(models.Model):
     codigo = models.CharField(max_length=50, unique=True)
     nombre = models.CharField(max_length=200)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock_actual = models.IntegerField(default=0)
